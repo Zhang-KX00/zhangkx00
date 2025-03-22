@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>关于RabbitMQ新建用户的错误解决方案</title>
+      <link href="/zhangkx00/2025/03/22/%E5%85%B3%E4%BA%8ERabbitMQ%E6%96%B0%E5%BB%BA%E7%94%A8%E6%88%B7%E7%9A%84%E9%94%99%E8%AF%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/"/>
+      <url>/zhangkx00/2025/03/22/%E5%85%B3%E4%BA%8ERabbitMQ%E6%96%B0%E5%BB%BA%E7%94%A8%E6%88%B7%E7%9A%84%E9%94%99%E8%AF%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/</url>
+      
+        <content type="html"><![CDATA[<img src="/zhangkx00/2025/03/22/%E5%85%B3%E4%BA%8ERabbitMQ%E6%96%B0%E5%BB%BA%E7%94%A8%E6%88%B7%E7%9A%84%E9%94%99%E8%AF%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/rabbitmq.png" class title="rabbitmq"><h1 id="rabbitMq的status报错Error-unable-to-perform-an-operation-on-node-‘rabbit……"><a href="#rabbitMq的status报错Error-unable-to-perform-an-operation-on-node-‘rabbit……" class="headerlink" title="rabbitMq的status报错Error: unable to perform an operation on node ‘rabbit……"></a>rabbitMq的status报错Error: unable to perform an operation on node ‘rabbit……</h1><p>这个错误一般是由于<a href="https://so.csdn.net/so/search?q=RabbitMQ&spm=1001.2101.3001.7020">RabbitMQ</a> CLI 工具的 Erlang Cookie 与服务器不匹配而导致连接问题。什么意思呢？就是cookie不一致</p><p><strong>而Erlang Cookie 在 RabbitMQ 节点之间进行身份验证和安全通信时起着重要作用。</strong></p><p>在你们的C盘进行搜索有两个.erlang.cookie文件名，而里面的cookie修改为一致即可。</p><p>位置一：C:\Users\test.erlang.cookie</p><p>位置二：C:\Windows\System32\config\systemprofile.erlang.cookie</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> RabbitMQ </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>第一次写俺自己的博客，有点激动。嘿嘿</title>
       <link href="/zhangkx00/2025/03/21/hello-world/"/>
       <url>/zhangkx00/2025/03/21/hello-world/</url>
