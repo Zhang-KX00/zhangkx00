@@ -1,0 +1,366 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JVM调优实战：从理论到实践的全方位指南 | 开心</title><meta name="author" content="开心"><meta name="copyright" content="开心"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="引言Java虚拟机(JVM)作为Java应用程序的运行环境，其性能调优是每个Java开发者都应该掌握的重要技能。良好的JVM调优可以显著提升应用程序的性能，减少GC停顿时间，提高系统吞吐量。本文将带你深入理解JVM调优的核心原理，并通过实际案例展示如何进行有效的调优。 一、JVM内存模型基础在开始调优之前，我们需要先理解JVM的内存结构：  堆内存(Heap) 新生代(Young Genera">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM调优实战：从理论到实践的全方位指南">
+<meta property="og:url" content="https://zhang-kx00.github.io/zhangkx00/2025/04/28/JVM/index.html">
+<meta property="og:site_name" content="开心">
+<meta property="og:description" content="引言Java虚拟机(JVM)作为Java应用程序的运行环境，其性能调优是每个Java开发者都应该掌握的重要技能。良好的JVM调优可以显著提升应用程序的性能，减少GC停顿时间，提高系统吞吐量。本文将带你深入理解JVM调优的核心原理，并通过实际案例展示如何进行有效的调优。 一、JVM内存模型基础在开始调优之前，我们需要先理解JVM的内存结构：  堆内存(Heap) 新生代(Young Genera">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhang-kx00.github.io/zhangkx00/images/JVM.png">
+<meta property="article:published_time" content="2025-04-28T00:21:07.000Z">
+<meta property="article:modified_time" content="2025-04-28T00:26:20.040Z">
+<meta property="article:author" content="开心">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhang-kx00.github.io/zhangkx00/images/JVM.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JVM调优实战：从理论到实践的全方位指南",
+  "url": "https://zhang-kx00.github.io/zhangkx00/2025/04/28/JVM/",
+  "image": "https://zhang-kx00.github.io/zhangkx00/images/JVM.png",
+  "datePublished": "2025-04-28T00:21:07.000Z",
+  "dateModified": "2025-04-28T00:26:20.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "开心",
+      "url": "https://zhang-kx00.github.io/zhangkx00/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/zhangkx00/images/TestImage.jpg"><link rel="canonical" href="https://zhang-kx00.github.io/zhangkx00/2025/04/28/JVM/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/zhangkx00/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/zhangkx00/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JVM调优实战：从理论到实践的全方位指南',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(images/leizhihuxi.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/zhangkx00/images/TestImage.jpg" onerror="this.onerror=null;this.src='/zhangkx00/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/zhangkx00/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/zhangkx00/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/zhangkx00/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/zhangkx00/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/archives/"><i class="fa-fw fa fa-archive"></i><span> 档案</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/about"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/JVM.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/zhangkx00/"><img class="site-icon" src="/zhangkx00/images/TestImage.jpg" alt="Logo"><span class="site-name">开心</span></a><a class="nav-page-title" href="/zhangkx00/"><span class="site-name">JVM调优实战：从理论到实践的全方位指南</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/zhangkx00/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/archives/"><i class="fa-fw fa fa-archive"></i><span> 档案</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/zhangkx00/about"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">JVM调优实战：从理论到实践的全方位指南</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-04-28T00:21:07.000Z" title="发表于 2025-04-28 08:21:07">2025-04-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-04-28T00:26:20.040Z" title="更新于 2025-04-28 08:26:20">2025-04-28</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><img src="/zhangkx00/2025/04/28/JVM/JVM.png" class title="JVM">
+
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>Java虚拟机(JVM)作为Java应用程序的运行环境，其性能调优是每个Java开发者都应该掌握的重要技能。良好的JVM调优可以显著提升应用程序的性能，减少GC停顿时间，提高系统吞吐量。本文将带你深入理解JVM调优的核心原理，并通过实际案例展示如何进行有效的调优。</p>
+<h2 id="一、JVM内存模型基础"><a href="#一、JVM内存模型基础" class="headerlink" title="一、JVM内存模型基础"></a>一、JVM内存模型基础</h2><p>在开始调优之前，我们需要先理解JVM的内存结构：</p>
+<ol>
+<li><strong>堆内存(Heap)</strong><ul>
+<li>新生代(Young Generation)：Eden区、Survivor0、Survivor1</li>
+<li>老年代(Old Generation&#x2F;Tenured)</li>
+</ul>
+</li>
+<li><strong>非堆内存(Non-Heap)</strong><ul>
+<li>方法区(Metaspace)</li>
+<li>代码缓存(Code Cache)</li>
+<li>JVM自身使用内存</li>
+</ul>
+</li>
+<li><strong>线程私有区域</strong><ul>
+<li>程序计数器</li>
+<li>虚拟机栈</li>
+<li>本地方法栈</li>
+</ul>
+</li>
+</ol>
+<h2 id="二、垃圾收集器与调优策略"><a href="#二、垃圾收集器与调优策略" class="headerlink" title="二、垃圾收集器与调优策略"></a>二、垃圾收集器与调优策略</h2><h3 id="1-常见垃圾收集器"><a href="#1-常见垃圾收集器" class="headerlink" title="1. 常见垃圾收集器"></a>1. 常见垃圾收集器</h3><ul>
+<li><strong>Serial GC</strong>：单线程收集器，适合客户端应用</li>
+<li><strong>Parallel GC</strong>：多线程收集器，注重吞吐量</li>
+<li><strong>CMS GC</strong>：并发标记清除，减少停顿时间</li>
+<li><strong>G1 GC</strong>：面向服务端，平衡吞吐量和停顿</li>
+<li><strong>ZGC&#x2F;Shenandoah</strong>：超低延迟收集器(Java11+)</li>
+</ul>
+<h3 id="2-收集器选择策略"><a href="#2-收集器选择策略" class="headerlink" title="2. 收集器选择策略"></a>2. 收集器选择策略</h3><table>
+<thead>
+<tr>
+<th align="left">场景</th>
+<th align="left">推荐收集器</th>
+<th align="left">参数配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">客户端应用</td>
+<td align="left">Serial GC</td>
+<td align="left">-XX:+UseSerialGC</td>
+</tr>
+<tr>
+<td align="left">注重吞吐量</td>
+<td align="left">Parallel GC</td>
+<td align="left">-XX:+UseParallelGC</td>
+</tr>
+<tr>
+<td align="left">低延迟要求</td>
+<td align="left">CMS&#x2F;G1</td>
+<td align="left">-XX:+UseConcMarkSweepGC &#x2F; -XX:+UseG1GC</td>
+</tr>
+<tr>
+<td align="left">大内存低延迟</td>
+<td align="left">ZGC&#x2F;Shenandoah</td>
+<td align="left">-XX:+UseZGC &#x2F; -XX:+UseShenandoahGC</td>
+</tr>
+</tbody></table>
+<h2 id="三、核心调优参数详解"><a href="#三、核心调优参数详解" class="headerlink" title="三、核心调优参数详解"></a>三、核心调优参数详解</h2><h3 id="1-内存相关参数"><a href="#1-内存相关参数" class="headerlink" title="1. 内存相关参数"></a>1. 内存相关参数</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># 设置堆初始和最大值(推荐设为相同)</span><br><span class="line">-Xms4g -Xmx4g</span><br><span class="line"></span><br><span class="line"># 新生代大小</span><br><span class="line">-XX:NewSize=1g -XX:MaxNewSize=1g</span><br><span class="line"></span><br><span class="line"># 新生代与老年代比例(默认1:2)</span><br><span class="line">-XX:NewRatio=2</span><br><span class="line"></span><br><span class="line"># Survivor区与Eden区比例(默认1:8)</span><br><span class="line">-XX:SurvivorRatio=8</span><br><span class="line"></span><br><span class="line"># 元空间大小(Java8+)</span><br><span class="line">-XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=256m</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-GC策略参数"><a href="#2-GC策略参数" class="headerlink" title="2. GC策略参数"></a>2. GC策略参数</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># 并行GC线程数</span><br><span class="line">-XX:ParallelGCThreads=4</span><br><span class="line"></span><br><span class="line"># CMS相关参数</span><br><span class="line">-XX:+UseConcMarkSweepGC</span><br><span class="line">-XX:CMSInitiatingOccupancyFraction=75</span><br><span class="line">-XX:+UseCMSInitiatingOccupancyOnly</span><br><span class="line"></span><br><span class="line"># G1相关参数</span><br><span class="line">-XX:+UseG1GC</span><br><span class="line">-XX:MaxGCPauseMillis=200</span><br><span class="line">-XX:G1HeapRegionSize=4m</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-其他重要参数"><a href="#3-其他重要参数" class="headerlink" title="3. 其他重要参数"></a>3. 其他重要参数</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 打印GC日志</span><br><span class="line">-XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/path/to/gc.log</span><br><span class="line"></span><br><span class="line"># 堆溢出时dump内存</span><br><span class="line">-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/path/to/dump.hprof</span><br><span class="line"></span><br><span class="line"># 禁用显式GC调用(System.gc())</span><br><span class="line">-XX:+DisableExplicitGC</span><br><span class="line"></span><br><span class="line"># 压缩普通对象指针(64位系统)</span><br><span class="line">-XX:+UseCompressedOops</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、调优实战步骤"><a href="#四、调优实战步骤" class="headerlink" title="四、调优实战步骤"></a>四、调优实战步骤</h2><h3 id="1-性能评估与基准测试"><a href="#1-性能评估与基准测试" class="headerlink" title="1. 性能评估与基准测试"></a>1. 性能评估与基准测试</h3><ul>
+<li>使用工具监控(JVisualVM, JConsole, Prometheus + Grafana)</li>
+<li>收集关键指标：吞吐量、延迟、GC频率&#x2F;时间、内存占用</li>
+<li>建立性能基准</li>
+</ul>
+<h3 id="2-常见问题诊断"><a href="#2-常见问题诊断" class="headerlink" title="2. 常见问题诊断"></a>2. 常见问题诊断</h3><ul>
+<li><strong>频繁Full GC</strong>：老年代空间不足、内存泄漏</li>
+<li><strong>长GC停顿</strong>：堆过大、收集器选择不当</li>
+<li><strong>高内存占用</strong>：对象生命周期管理不当</li>
+<li><strong>Metaspace溢出</strong>：动态类加载过多</li>
+</ul>
+<h3 id="3-调优案例"><a href="#3-调优案例" class="headerlink" title="3. 调优案例"></a>3. 调优案例</h3><p><strong>案例1：电商应用高并发场景</strong></p>
+<p>bash</p>
+<p>复制</p>
+<p>下载</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 配置示例</span><br><span class="line">-Xms8g -Xmx8g </span><br><span class="line">-XX:+UseG1GC </span><br><span class="line">-XX:MaxGCPauseMillis=200 </span><br><span class="line">-XX:InitiatingHeapOccupancyPercent=45 </span><br><span class="line">-XX:ParallelGCThreads=8 </span><br><span class="line">-XX:ConcGCThreads=4</span><br><span class="line">-XX:+AlwaysPreTouch</span><br></pre></td></tr></table></figure>
+
+<p><strong>案例2：大数据批处理应用</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 配置示例</span><br><span class="line">-Xms16g -Xmx16g</span><br><span class="line">-XX:+UseParallelGC</span><br><span class="line">-XX:ParallelGCThreads=16</span><br><span class="line">-XX:NewRatio=1</span><br><span class="line">-XX:SurvivorRatio=6</span><br><span class="line">-XX:+UseAdaptiveSizePolicy</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、高级调优技巧"><a href="#五、高级调优技巧" class="headerlink" title="五、高级调优技巧"></a>五、高级调优技巧</h2><ol>
+<li><strong>JIT编译器调优</strong><ul>
+<li>-XX:+TieredCompilation</li>
+<li>-XX:CompileThreshold</li>
+</ul>
+</li>
+<li><strong>内存分配优化</strong><ul>
+<li>-XX:+UseTLAB (线程局部分配缓冲)</li>
+<li>-XX:PretenureSizeThreshold (大对象直接进入老年代)</li>
+</ul>
+</li>
+<li><strong>容器环境调优</strong><ul>
+<li>使用-XX:+UseContainerSupport (Java10+)</li>
+<li>设置-XX:MaxRAMPercentage替代固定值</li>
+</ul>
+</li>
+</ol>
+<h2 id="六、调优工具推荐"><a href="#六、调优工具推荐" class="headerlink" title="六、调优工具推荐"></a>六、调优工具推荐</h2><ol>
+<li><strong>JDK自带工具</strong><ul>
+<li>jstat, jmap, jstack</li>
+<li>VisualVM, JConsole</li>
+</ul>
+</li>
+<li><strong>第三方工具</strong><ul>
+<li>Arthas (阿里开源的Java诊断工具)</li>
+<li>GCViewer (GC日志分析)</li>
+<li>YourKit (商业分析器)</li>
+</ul>
+</li>
+<li><strong>生产环境监控</strong><ul>
+<li>Prometheus + Grafana</li>
+<li>ELK Stack (日志分析)</li>
+</ul>
+</li>
+</ol>
+<h2 id="七、调优注意事项"><a href="#七、调优注意事项" class="headerlink" title="七、调优注意事项"></a>七、调优注意事项</h2><ol>
+<li>调优前必须有明确的性能目标和基准</li>
+<li>每次只修改一个参数并观察效果</li>
+<li>生产环境变更前必须在测试环境验证</li>
+<li>调优不是万能的，不良的代码设计无法通过调优解决</li>
+<li>文档记录每次调优变更和效果</li>
+</ol>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>JVM调优是一门需要理论与实践结合的艺术。本文介绍了调优的基础知识和常用技巧，但实际调优过程中，每个应用都有其独特性。建议开发者在理解原理的基础上，结合具体应用场景，通过监控、分析、实验的循环过程，找到最适合自己应用的JVM配置。</p>
+<p>记住：没有放之四海而皆准的最优配置，只有最适合你应用场景的配置。持续监控和迭代优化才是JVM性能调优的长久之道。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://zhang-kx00.github.io/zhangkx00">开心</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://zhang-kx00.github.io/zhangkx00/2025/04/28/JVM/">https://zhang-kx00.github.io/zhangkx00/2025/04/28/JVM/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://zhang-kx00.github.io/zhangkx00" target="_blank">开心</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/zhangkx00/tags/JVM/">JVM</a></div><div class="post-share"><div class="social-share" data-image="/zhangkx00/images/JVM.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/zhangkx00/2025/03/26/docker%E5%AE%89%E8%A3%85%E6%8A%A5wsl-exe-update-web-download-HrCg-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" title="docker安装报wsl.exe --update --web-download HrCg@解决方案"><img class="cover" src="/zhangkx00/images/docker.png" onerror="onerror=null;src='/zhangkx00/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">docker安装报wsl.exe --update --web-download HrCg@解决方案</div></div><div class="info-2"><div class="info-item-1">  一.在ddocker启动后，就会出现这个图片：   日志显示乱码了，杂草的，困扰了我好久。 各位是不是网上铺天盖地的解决方案，发现没有一个合适的？？？？ 那你来看我就对了！！！！。 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960wsl update failed: update failed: updating wsl: exit code: 4294967295: running WSL command wsl.exe C:\Windows\System32\wsl.exe --update --web-download: HrCg@b	g(c) Microsoft Corporation0�OYu@b	gCg)R0(u�l: wsl.exe [�Spe] [	�y�...] [&#125;T�NL�]ЏL� Linux �Nۏ6R�e�N�v�Spe:   ...</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/zhangkx00/images/TestImage.jpg" onerror="this.onerror=null;this.src='/zhangkx00/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">开心</div><div class="author-info-description">谢谢你来瞅我哈,祝你没BUG</div><div class="site-data"><a href="/zhangkx00/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/zhangkx00/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/zhangkx00/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Zhang-KX00"><i class="fab fa-github"></i><span>点这儿瞅我</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Zhang-KX00" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zhangyikang6692@163.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">做一个有理想的牛马</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">一、JVM内存模型基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E4%B8%8E%E8%B0%83%E4%BC%98%E7%AD%96%E7%95%A5"><span class="toc-number">3.</span> <span class="toc-text">二、垃圾收集器与调优策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%B8%B8%E8%A7%81%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8"><span class="toc-number">3.1.</span> <span class="toc-text">1. 常见垃圾收集器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%94%B6%E9%9B%86%E5%99%A8%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5"><span class="toc-number">3.2.</span> <span class="toc-text">2. 收集器选择策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%A0%B8%E5%BF%83%E8%B0%83%E4%BC%98%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3"><span class="toc-number">4.</span> <span class="toc-text">三、核心调优参数详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%86%85%E5%AD%98%E7%9B%B8%E5%85%B3%E5%8F%82%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">1. 内存相关参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-GC%E7%AD%96%E7%95%A5%E5%8F%82%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">2. GC策略参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%85%B6%E4%BB%96%E9%87%8D%E8%A6%81%E5%8F%82%E6%95%B0"><span class="toc-number">4.3.</span> <span class="toc-text">3. 其他重要参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%B0%83%E4%BC%98%E5%AE%9E%E6%88%98%E6%AD%A5%E9%AA%A4"><span class="toc-number">5.</span> <span class="toc-text">四、调优实战步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%80%A7%E8%83%BD%E8%AF%84%E4%BC%B0%E4%B8%8E%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95"><span class="toc-number">5.1.</span> <span class="toc-text">1. 性能评估与基准测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%AF%8A%E6%96%AD"><span class="toc-number">5.2.</span> <span class="toc-text">2. 常见问题诊断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%B0%83%E4%BC%98%E6%A1%88%E4%BE%8B"><span class="toc-number">5.3.</span> <span class="toc-text">3. 调优案例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%AB%98%E7%BA%A7%E8%B0%83%E4%BC%98%E6%8A%80%E5%B7%A7"><span class="toc-number">6.</span> <span class="toc-text">五、高级调优技巧</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90"><span class="toc-number">7.</span> <span class="toc-text">六、调优工具推荐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%B0%83%E4%BC%98%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">8.</span> <span class="toc-text">七、调优注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-number">9.</span> <span class="toc-text">结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/zhangkx00/2025/04/28/JVM/" title="JVM调优实战：从理论到实践的全方位指南"><img src="/zhangkx00/images/JVM.png" onerror="this.onerror=null;this.src='/zhangkx00/img/404.jpg'" alt="JVM调优实战：从理论到实践的全方位指南"/></a><div class="content"><a class="title" href="/zhangkx00/2025/04/28/JVM/" title="JVM调优实战：从理论到实践的全方位指南">JVM调优实战：从理论到实践的全方位指南</a><time datetime="2025-04-28T00:21:07.000Z" title="发表于 2025-04-28 08:21:07">2025-04-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/zhangkx00/2025/03/26/docker%E5%AE%89%E8%A3%85%E6%8A%A5wsl-exe-update-web-download-HrCg-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" title="docker安装报wsl.exe --update --web-download HrCg@解决方案"><img src="/zhangkx00/images/docker.png" onerror="this.onerror=null;this.src='/zhangkx00/img/404.jpg'" alt="docker安装报wsl.exe --update --web-download HrCg@解决方案"/></a><div class="content"><a class="title" href="/zhangkx00/2025/03/26/docker%E5%AE%89%E8%A3%85%E6%8A%A5wsl-exe-update-web-download-HrCg-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" title="docker安装报wsl.exe --update --web-download HrCg@解决方案">docker安装报wsl.exe --update --web-download HrCg@解决方案</a><time datetime="2025-03-26T07:53:55.000Z" title="发表于 2025-03-26 15:53:55">2025-03-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/zhangkx00/2025/03/22/%E5%85%B3%E4%BA%8ERabbitMQ%E6%96%B0%E5%BB%BA%E7%94%A8%E6%88%B7%E7%9A%84%E9%94%99%E8%AF%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" title="关于RabbitMQ新建用户的错误解决方案"><img src="/zhangkx00/images/rabbitmq.png" onerror="this.onerror=null;this.src='/zhangkx00/img/404.jpg'" alt="关于RabbitMQ新建用户的错误解决方案"/></a><div class="content"><a class="title" href="/zhangkx00/2025/03/22/%E5%85%B3%E4%BA%8ERabbitMQ%E6%96%B0%E5%BB%BA%E7%94%A8%E6%88%B7%E7%9A%84%E9%94%99%E8%AF%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" title="关于RabbitMQ新建用户的错误解决方案">关于RabbitMQ新建用户的错误解决方案</a><time datetime="2025-03-22T06:58:59.000Z" title="发表于 2025-03-22 14:58:59">2025-03-22</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/images/JVM.png);"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By 开心</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/zhangkx00/js/utils.js"></script><script src="/zhangkx00/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'Zhang-KX00/zhangkx00',
+      'data-repo-id': 'R_kgDOOMNyqA',
+      'data-category-id': 'DIC_kwDOOMNyqM4CogJj',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
